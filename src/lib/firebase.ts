@@ -33,6 +33,7 @@ export type Question = {
   categoryId: string;
   chapterId: string | null;
   questionText: string;
+  imageUrl?: string | null;
   optionA: string;
   optionB: string;
   optionC: string;

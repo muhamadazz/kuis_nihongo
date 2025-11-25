@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { db, Category, Chapter } from '../lib/firebase';
 import { collection, query, where, getDocs, orderBy, addDoc, serverTimestamp } from 'firebase/firestore';
-import { ArrowLeft, Plus, Check } from 'lucide-react';
+import { ArrowLeft, Plus, Check, Upload, X } from 'lucide-react';
 
 type AdminFormProps = {
   onBack: () => void;
@@ -18,6 +18,9 @@ export default function AdminForm({ onBack }: AdminFormProps) {
   const [optionC, setOptionC] = useState('');
   const [optionD, setOptionD] = useState('');
   const [correctAnswer, setCorrectAnswer] = useState('a');
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
@@ -77,16 +80,70 @@ export default function AdminForm({ onBack }: AdminFormProps) {
     }
   }
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Ukuran file maksimal 5MB');
+        return;
+      }
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+  };
+
+  const uploadImageToCloudinary = async (file: File): Promise<string> => {
+    const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+    const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', uploadPreset);
+
+    const response = await fetch(
+      `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+      {
+        method: 'POST',
+        body: formData,
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error('Gagal upload foto ke Cloudinary');
+    }
+
+    const data = await response.json();
+    return data.secure_url;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setSuccess(false);
 
     try {
+      let imageUrl: string | null = null;
+
+      if (imageFile) {
+        setUploadingImage(true);
+        imageUrl = await uploadImageToCloudinary(imageFile);
+        setUploadingImage(false);
+      }
+
       await addDoc(collection(db, 'questions'), {
         categoryId: selectedCategory,
         chapterId: selectedChapter || null,
         questionText,
+        imageUrl,
         optionA,
         optionB,
         optionC,
@@ -97,6 +154,8 @@ export default function AdminForm({ onBack }: AdminFormProps) {
 
       setSuccess(true);
       setQuestionText('');
+      setImageFile(null);
+      setImagePreview(null);
       setOptionA('');
       setOptionB('');
       setOptionC('');
@@ -199,6 +258,50 @@ export default function AdminForm({ onBack }: AdminFormProps) {
               />
             </div>
 
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Foto Soal (Opsional)
+              </label>
+              {!imagePreview ? (
+                <div className="relative">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="hidden"
+                    id="image-upload"
+                  />
+                  <label
+                    htmlFor="image-upload"
+                    className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                  >
+                    <Upload className="w-8 h-8 text-gray-400 mb-2" />
+                    <span className="text-sm text-gray-600">
+                      Klik untuk upload foto
+                    </span>
+                    <span className="text-xs text-gray-500 mt-1">
+                      Maksimal 5MB
+                    </span>
+                  </label>
+                </div>
+              ) : (
+                <div className="relative">
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
+                    className="w-full h-48 object-cover rounded-lg"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleRemoveImage}
+                    className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+            </div>
+
             <div className="grid grid-cols-1 gap-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -277,10 +380,10 @@ export default function AdminForm({ onBack }: AdminFormProps) {
             <div className="flex gap-4 pt-4">
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || uploadingImage}
                 className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold disabled:bg-blue-400 disabled:cursor-not-allowed"
               >
-                {loading ? 'Menyimpan...' : 'Tambah Soal'}
+                {uploadingImage ? 'Mengupload foto...' : loading ? 'Menyimpan...' : 'Tambah Soal'}
               </button>
             </div>
           </form>

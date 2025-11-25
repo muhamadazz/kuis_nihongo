@@ -39,6 +39,7 @@ export default function QuizGame({ category, chapter, onBack }: QuizGameProps) {
           categoryId: doc.data().categoryId,
           chapterId: doc.data().chapterId || null,
           questionText: doc.data().questionText,
+          imageUrl: doc.data().imageUrl || null,
           optionA: doc.data().optionA,
           optionB: doc.data().optionB,
           optionC: doc.data().optionC,
@@ -186,9 +187,19 @@ export default function QuizGame({ category, chapter, onBack }: QuizGameProps) {
             </div>
           </div>
 
-          <h2 className="text-2xl font-bold text-gray-800 mb-8">
+          <h2 className="text-2xl font-bold text-gray-800 mb-6">
             {currentQuestion.questionText}
           </h2>
+
+          {currentQuestion.imageUrl && (
+            <div className="mb-6">
+              <img
+                src={currentQuestion.imageUrl}
+                alt="Soal"
+                className="w-full max-h-96 object-contain rounded-lg border border-gray-200"
+              />
+            </div>
+          )}
 
           <div className="space-y-4 mb-8">
             {options.map((option) => {

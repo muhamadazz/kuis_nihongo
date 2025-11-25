@@ -17,12 +17,14 @@ Aplikasi kuis bahasa Jepang interaktif dengan tiga kategori pembelajaran: Kotoba
 
 - **Admin Panel**
   - Tambah soal baru ke database
+  - Upload foto soal ke Cloudinary
   - Kelola kategori dan bab
 
 ## Teknologi
 
 - **Frontend**: React + TypeScript + Tailwind CSS
 - **Backend**: Firebase Firestore
+- **Cloud Storage**: Cloudinary
 - **Build Tool**: Vite
 
 ## Instalasi
@@ -44,9 +46,9 @@ cd project
 npm install
 ```
 
-3. Konfigurasi Firebase
+3. Konfigurasi Firebase dan Cloudinary
    - Buat file `.env` di root project
-   - Tambahkan konfigurasi Firebase Anda:
+   - Tambahkan konfigurasi Firebase dan Cloudinary Anda:
 ```env
 VITE_FIREBASE_API_KEY=your_api_key
 VITE_FIREBASE_AUTH_DOMAIN=your_auth_domain
@@ -54,9 +56,23 @@ VITE_FIREBASE_PROJECT_ID=your_project_id
 VITE_FIREBASE_STORAGE_BUCKET=your_storage_bucket
 VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
 VITE_FIREBASE_APP_ID=your_app_id
+VITE_CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+VITE_CLOUDINARY_UPLOAD_PRESET=your_cloudinary_upload_preset
 ```
 
-4. Jalankan development server
+4. Setup Cloudinary (untuk fitur upload foto)
+   - Buat akun di [Cloudinary](https://cloudinary.com)
+   - Login ke dashboard Cloudinary
+   - Dapatkan Cloud Name dari dashboard
+   - Buat Upload Preset:
+     - Pergi ke Settings > Upload
+     - Scroll ke bagian "Upload presets"
+     - Klik "Add upload preset"
+     - Pilih mode "Unsigned"
+     - Simpan preset name
+   - Isi `.env` dengan Cloud Name dan Upload Preset yang didapat
+
+5. Jalankan development server
 ```bash
 npm run dev
 ```
@@ -89,6 +105,7 @@ Pilih salah satu dari tiga kategori quiz:
 ### Admin Panel
 Klik ikon gear (⚙️) di pojok kanan atas untuk membuka admin panel:
 - Tambah soal baru dengan lengkap (pertanyaan, 4 pilihan, jawaban benar)
+- Upload foto untuk soal (opsional) - foto akan otomatis di-upload ke Cloudinary
 - Pilih kategori dan bab yang sesuai
 - Data akan disimpan otomatis ke Firebase
 
@@ -97,25 +114,30 @@ Klik ikon gear (⚙️) di pojok kanan atas untuk membuka admin panel:
 ### Collections di Firebase Firestore
 
 **categories**
-- `id` - ID unik kategori
-- `name` - Nama kategori (Kotoba, Bunpo, Kanji)
-- `slug` - URL slug
-- `description` - Deskripsi kategori
+- `id` (string) - ID unik kategori (auto-generated)
+- `name` (string) - Nama kategori (Kotoba, Bunpo, Kanji)
+- `slug` (string) - URL slug untuk routing
+- `createdAt` (timestamp) - Waktu pembuatan data
 
 **chapters**
-- `id` - ID unik bab
-- `categoryId` - Referensi ke kategori
-- `title` - Judul bab
-- `order` - Urutan bab
+- `id` (string) - ID unik bab (auto-generated)
+- `categoryId` (string) - Referensi ke kategori (foreign key)
+- `title` (string) - Judul bab
+- `chapterNumber` (number) - Nomor urutan bab
+- `createdAt` (timestamp) - Waktu pembuatan data
 
 **questions**
-- `id` - ID unik pertanyaan
-- `categoryId` - Referensi ke kategori
-- `chapterId` - Referensi ke bab (opsional)
-- `questionText` - Teks pertanyaan
-- `optionA`, `optionB`, `optionC`, `optionD` - Pilihan jawaban
-- `correctAnswer` - Jawaban benar (a, b, c, atau d)
-- `createdAt` - Timestamp pembuatan
+- `id` (string) - ID unik pertanyaan (auto-generated)
+- `categoryId` (string) - Referensi ke kategori (foreign key)
+- `chapterId` (string | null) - Referensi ke bab, null jika tidak ada bab
+- `questionText` (string) - Teks pertanyaan
+- `imageUrl` (string | null) - URL foto dari Cloudinary (opsional)
+- `optionA` (string) - Pilihan jawaban A
+- `optionB` (string) - Pilihan jawaban B
+- `optionC` (string) - Pilihan jawaban C
+- `optionD` (string) - Pilihan jawaban D
+- `correctAnswer` (string) - Jawaban benar ('a', 'b', 'c', atau 'd')
+- `createdAt` (timestamp) - Waktu pembuatan data
 
 ## Scripts
 
