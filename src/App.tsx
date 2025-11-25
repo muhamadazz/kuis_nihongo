@@ -3,6 +3,7 @@ import CategorySelection from './components/CategorySelection';
 import ChapterSelection from './components/ChapterSelection';
 import QuizGame from './components/QuizGame';
 import AdminForm from './components/AdminForm';
+import Footer from './components/Footer';
 import { Category, Chapter } from './lib/firebase';
 import { Settings } from 'lucide-react';
 
@@ -40,40 +41,43 @@ function App() {
   };
 
   return (
-    <>
-      {view === 'category' && (
-        <div className="relative">
-          <button
-            onClick={() => setView('admin')}
-            className="fixed top-6 right-6 bg-white text-blue-600 p-4 rounded-full shadow-lg hover:shadow-xl transition-all z-10"
-            title="Admin - Tambah Soal"
-          >
-            <Settings className="w-6 h-6" />
-          </button>
-          <CategorySelection onSelectCategory={handleSelectCategory} />
-        </div>
-      )}
+    <div className="flex flex-col min-h-screen">
+      <div className="flex-grow">
+        {view === 'category' && (
+          <div className="relative">
+            <button
+              onClick={() => setView('admin')}
+              className="fixed top-6 right-6 bg-white text-blue-600 p-4 rounded-full shadow-lg hover:shadow-xl transition-all z-10"
+              title="Admin - Tambah Soal"
+            >
+              <Settings className="w-6 h-6" />
+            </button>
+            <CategorySelection onSelectCategory={handleSelectCategory} />
+          </div>
+        )}
 
-      {view === 'chapter' && selectedCategory && (
-        <ChapterSelection
-          category={selectedCategory}
-          onSelectChapter={handleSelectChapter}
-          onBack={handleBackToCategory}
-        />
-      )}
+        {view === 'chapter' && selectedCategory && (
+          <ChapterSelection
+            category={selectedCategory}
+            onSelectChapter={handleSelectChapter}
+            onBack={handleBackToCategory}
+          />
+        )}
 
-      {view === 'quiz' && selectedCategory && (
-        <QuizGame
-          category={selectedCategory}
-          chapter={selectedChapter}
-          onBack={selectedCategory.slug === 'bunpo' ? handleBackToChapter : handleBackToCategory}
-        />
-      )}
+        {view === 'quiz' && selectedCategory && (
+          <QuizGame
+            category={selectedCategory}
+            chapter={selectedChapter}
+            onBack={selectedCategory.slug === 'bunpo' ? handleBackToChapter : handleBackToCategory}
+          />
+        )}
 
-      {view === 'admin' && (
-        <AdminForm onBack={handleBackToCategory} />
-      )}
-    </>
+        {view === 'admin' && (
+          <AdminForm onBack={handleBackToCategory} />
+        )}
+      </div>
+      <Footer />
+    </div>
   );
 }
 

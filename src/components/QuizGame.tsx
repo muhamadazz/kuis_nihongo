@@ -62,7 +62,7 @@ export default function QuizGame({ category, chapter, onBack }: QuizGameProps) {
     setSelectedAnswer(answer);
     setShowResult(true);
 
-    if (answer === currentQuestion.correct_answer) {
+    if (answer === currentQuestion.correctAnswer) {
       setScore(score + 1);
     }
   };
@@ -151,10 +151,10 @@ export default function QuizGame({ category, chapter, onBack }: QuizGameProps) {
   }
 
   const options = [
-    { key: 'a', text: currentQuestion.option_a },
-    { key: 'b', text: currentQuestion.option_b },
-    { key: 'c', text: currentQuestion.option_c },
-    { key: 'd', text: currentQuestion.option_d },
+    { key: 'a', text: currentQuestion.optionA },
+    { key: 'b', text: currentQuestion.optionB },
+    { key: 'c', text: currentQuestion.optionC },
+    { key: 'd', text: currentQuestion.optionD },
   ];
 
   return (
@@ -187,13 +187,13 @@ export default function QuizGame({ category, chapter, onBack }: QuizGameProps) {
           </div>
 
           <h2 className="text-2xl font-bold text-gray-800 mb-8">
-            {currentQuestion.question_text}
+            {currentQuestion.questionText}
           </h2>
 
           <div className="space-y-4 mb-8">
             {options.map((option) => {
               const isSelected = selectedAnswer === option.key;
-              const isCorrect = option.key === currentQuestion.correct_answer;
+              const isCorrect = option.key === currentQuestion.correctAnswer;
               const showCorrectAnswer = showResult && isCorrect;
               const showWrongAnswer = showResult && isSelected && !isCorrect;
 
