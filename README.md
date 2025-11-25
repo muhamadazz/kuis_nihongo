@@ -106,7 +106,11 @@ Pilih salah satu dari tiga kategori quiz:
 Klik ikon gear (⚙️) di pojok kanan atas untuk membuka admin panel:
 - Tambah soal baru dengan lengkap (pertanyaan, 4 pilihan, jawaban benar)
 - Upload foto untuk soal (opsional) - foto akan otomatis di-upload ke Cloudinary
-- Pilih kategori dan bab yang sesuai
+- Pilih kategori sesuai dengan jenis soal
+
+**Perbedaan Form berdasarkan Kategori:**
+- **Kotoba (Kosakata) & Kanji**: Soal langsung ditambahkan tanpa pilih bab, dapat diakses dari kategori
+- **Bunpo (Tata Bahasa)**: Wajib memilih bab terlebih dahulu, soal akan tersimpan dalam bab yang dipilih
 - Data akan disimpan otomatis ke Firebase
 
 ## Struktur Database
@@ -138,6 +142,58 @@ Klik ikon gear (⚙️) di pojok kanan atas untuk membuka admin panel:
 - `optionD` (string) - Pilihan jawaban D
 - `correctAnswer` (string) - Jawaban benar ('a', 'b', 'c', atau 'd')
 - `createdAt` (timestamp) - Waktu pembuatan data
+
+## Penjelasan Struktur Quiz
+
+### Flow untuk Kotoba & Kanji
+```
+User Membuka App
+    ↓
+Pilih Kategori (Kotoba/Kanji)
+    ↓
+Quiz Dimulai (ambil 10 soal random dari kategori)
+    ↓
+Jawab Soal
+```
+**Struktur Database**: Soal disimpan dengan `chapterId = null`
+
+### Flow untuk Bunpo
+```
+User Membuka App
+    ↓
+Pilih Kategori (Bunpo)
+    ↓
+Pilih Bab/Chapter
+    ↓
+Quiz Dimulai (ambil 10 soal dari bab yang dipilih)
+    ↓
+Jawab Soal
+```
+**Struktur Database**: Soal disimpan dengan `chapterId = <id bab tertentu>`
+
+### Flow Admin - Menambah Soal Kotoba/Kanji
+```
+Buka Admin Panel
+    ↓
+Pilih Kategori (Kotoba/Kanji)
+    ↓
+Isi Form Soal (tanpa pilih bab)
+    ↓
+Upload (chapterId otomatis = null)
+```
+
+### Flow Admin - Menambah Soal Bunpo
+```
+Buka Admin Panel
+    ↓
+Pilih Kategori (Bunpo)
+    ↓
+Pilih Bab (WAJIB)
+    ↓
+Isi Form Soal
+    ↓
+Upload (chapterId = bab yang dipilih)
+```
 
 ## Scripts
 

@@ -131,6 +131,12 @@ export default function AdminForm({ onBack }: AdminFormProps) {
     setSuccess(false);
 
     try {
+      if (isBunpo && !selectedChapter) {
+        alert('Pilih bab terlebih dahulu untuk kategori Bunpo');
+        setLoading(false);
+        return;
+      }
+
       let imageUrl: string | null = null;
 
       if (imageFile) {
@@ -141,7 +147,7 @@ export default function AdminForm({ onBack }: AdminFormProps) {
 
       await addDoc(collection(db, 'questions'), {
         categoryId: selectedCategory,
-        chapterId: selectedChapter || null,
+        chapterId: isBunpo ? selectedChapter : null,
         questionText,
         imageUrl,
         optionA,
@@ -224,23 +230,39 @@ export default function AdminForm({ onBack }: AdminFormProps) {
               </select>
             </div>
 
-            {isBunpo && chapters.length > 0 && (
+            {isBunpo && (
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Bab (untuk Bunpo)
+                  Bab *
+                  <span className="text-xs text-gray-500 font-normal ml-2">(Wajib untuk kategori Bunpo)</span>
                 </label>
-                <select
-                  value={selectedChapter}
-                  onChange={(e) => setSelectedChapter(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">Pilih Bab</option>
-                  {chapters.map((chapter) => (
-                    <option key={chapter.id} value={chapter.id}>
-                      Bab {chapter.chapterNumber}: {chapter.title}
-                    </option>
-                  ))}
-                </select>
+                {chapters.length > 0 ? (
+                  <select
+                    value={selectedChapter}
+                    onChange={(e) => setSelectedChapter(e.target.value)}
+                    required={isBunpo}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Pilih Bab</option>
+                    {chapters.map((chapter) => (
+                      <option key={chapter.id} value={chapter.id}>
+                        Bab {chapter.chapterNumber}: {chapter.title}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-yellow-800 text-sm">
+                    Belum ada bab yang tersedia untuk kategori ini
+                  </div>
+                )}
+              </div>
+            )}
+
+            {!isBunpo && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-sm text-blue-800">
+                  <span className="font-semibold">Catatan:</span> Soal ini akan ditambahkan tanpa bab dan dapat diakses langsung dari kategori
+                </p>
               </div>
             )}
 
