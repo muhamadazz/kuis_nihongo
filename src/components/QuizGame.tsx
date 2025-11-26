@@ -24,13 +24,15 @@ export default function QuizGame({ category, chapter, onBack }: QuizGameProps) {
 
   async function loadQuestions() {
     try {
-      let conditions = [where('categoryId', '==', category.id)];
-      if (chapter) {
-        conditions.push(where('chapterId', '==', chapter.id));
-      } else {
-        conditions.push(where('chapterId', '==', null));
+      if (!chapter) {
+        setLoading(false);
+        return;
       }
-      const q = query(collection(db, 'questions'), ...conditions);
+      const q = query(
+        collection(db, 'questions'),
+        where('categoryId', '==', category.id),
+        where('chapterId', '==', chapter.id)
+      );
       const querySnapshot = await getDocs(q);
       const data: Question[] = [];
       querySnapshot.forEach((doc) => {
@@ -107,7 +109,7 @@ export default function QuizGame({ category, chapter, onBack }: QuizGameProps) {
             Kembali
           </button>
           <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
-            <p className="text-xl text-gray-600">Belum ada soal untuk kategori ini.</p>
+            <p className="text-xl text-gray-600">Belum ada soal untuk bab ini.</p>
           </div>
         </div>
       </div>

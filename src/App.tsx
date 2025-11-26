@@ -16,12 +16,7 @@ function App() {
 
   const handleSelectCategory = (category: Category) => {
     setSelectedCategory(category);
-    if (category.slug === 'bunpo') {
-      setView('chapter');
-    } else {
-      setSelectedChapter(null);
-      setView('quiz');
-    }
+    setView('chapter');
   };
 
   const handleSelectChapter = (chapter: Chapter | null) => {
@@ -68,7 +63,7 @@ function App() {
           <QuizGame
             category={selectedCategory}
             chapter={selectedChapter}
-            onBack={selectedCategory.slug === 'bunpo' ? handleBackToChapter : handleBackToCategory}
+            onBack={handleBackToChapter}
           />
         )}
 

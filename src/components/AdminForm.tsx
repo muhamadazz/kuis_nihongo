@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
 import { db, Category, Chapter } from '../lib/firebase';
 import { collection, query, where, getDocs, orderBy, addDoc, serverTimestamp } from 'firebase/firestore';
-import { ArrowLeft, Plus, Check, Upload, X } from 'lucide-react';
+import { ArrowLeft, Plus, Check, Upload, X, BookOpen } from 'lucide-react';
+import ChapterManagement from './ChapterManagement';
 
 type AdminFormProps = {
   onBack: () => void;
 };
 
 export default function AdminForm({ onBack }: AdminFormProps) {
+  const [activeTab, setActiveTab] = useState<'questions' | 'chapters'>('questions');
   const [categories, setCategories] = useState<Category[]>([]);
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -131,8 +133,8 @@ export default function AdminForm({ onBack }: AdminFormProps) {
     setSuccess(false);
 
     try {
-      if (isBunpo && !selectedChapter) {
-        alert('Pilih bab terlebih dahulu untuk kategori Bunpo');
+      if (!selectedChapter) {
+        alert('Pilih bab terlebih dahulu');
         setLoading(false);
         return;
       }
@@ -147,7 +149,7 @@ export default function AdminForm({ onBack }: AdminFormProps) {
 
       await addDoc(collection(db, 'questions'), {
         categoryId: selectedCategory,
-        chapterId: isBunpo ? selectedChapter : null,
+        chapterId: selectedChapter,
         questionText,
         imageUrl,
         optionA,
@@ -178,9 +180,6 @@ export default function AdminForm({ onBack }: AdminFormProps) {
     setLoading(false);
   };
 
-  const selectedCategoryObj = categories.find(cat => cat.id === selectedCategory);
-  const isBunpo = selectedCategoryObj?.slug === 'bunpo';
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4">
       <div className="max-w-3xl mx-auto">
@@ -193,24 +192,65 @@ export default function AdminForm({ onBack }: AdminFormProps) {
         </button>
 
         <div className="bg-white rounded-2xl shadow-lg p-8">
-          <div className="flex items-center mb-8">
-            <div className="bg-blue-100 rounded-lg p-3 text-blue-600 mr-4">
-              <Plus className="w-8 h-8" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-800">Tambah Soal Baru</h1>
-              <p className="text-gray-600">Isi form di bawah untuk menambah soal quiz</p>
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center">
+              <div className="bg-blue-100 rounded-lg p-3 text-blue-600 mr-4">
+                <Plus className="w-8 h-8" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-800">Admin Panel</h1>
+                <p className="text-gray-600">Kelola chapter dan soal quiz</p>
+              </div>
             </div>
           </div>
 
-          {success && (
-            <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4 flex items-center">
-              <Check className="w-5 h-5 text-green-600 mr-3" />
-              <span className="text-green-800">Soal berhasil ditambahkan!</span>
-            </div>
-          )}
+          <div className="flex space-x-4 mb-8 border-b border-gray-200">
+            <button
+              onClick={() => setActiveTab('questions')}
+              className={`pb-4 px-2 font-semibold transition-colors relative ${
+                activeTab === 'questions'
+                  ? 'text-blue-600'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <div className="flex items-center">
+                <Plus className="w-5 h-5 mr-2" />
+                Tambah Soal
+              </div>
+              {activeTab === 'questions' && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"></div>
+              )}
+            </button>
+            <button
+              onClick={() => setActiveTab('chapters')}
+              className={`pb-4 px-2 font-semibold transition-colors relative ${
+                activeTab === 'chapters'
+                  ? 'text-blue-600'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <div className="flex items-center">
+                <BookOpen className="w-5 h-5 mr-2" />
+                Kelola Chapter
+              </div>
+              {activeTab === 'chapters' && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"></div>
+              )}
+            </button>
+          </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          {activeTab === 'chapters' ? (
+            <ChapterManagement categories={categories} />
+          ) : (
+            <>
+              {success && (
+                <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4 flex items-center">
+                  <Check className="w-5 h-5 text-green-600 mr-3" />
+                  <span className="text-green-800">Soal berhasil ditambahkan!</span>
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Kategori *
@@ -230,41 +270,30 @@ export default function AdminForm({ onBack }: AdminFormProps) {
               </select>
             </div>
 
-            {isBunpo && (
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Bab *
-                  <span className="text-xs text-gray-500 font-normal ml-2">(Wajib untuk kategori Bunpo)</span>
-                </label>
-                {chapters.length > 0 ? (
-                  <select
-                    value={selectedChapter}
-                    onChange={(e) => setSelectedChapter(e.target.value)}
-                    required={isBunpo}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">Pilih Bab</option>
-                    {chapters.map((chapter) => (
-                      <option key={chapter.id} value={chapter.id}>
-                        Bab {chapter.chapterNumber}: {chapter.title}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-yellow-800 text-sm">
-                    Belum ada bab yang tersedia untuk kategori ini
-                  </div>
-                )}
-              </div>
-            )}
-
-            {!isBunpo && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <p className="text-sm text-blue-800">
-                  <span className="font-semibold">Catatan:</span> Soal ini akan ditambahkan tanpa bab dan dapat diakses langsung dari kategori
-                </p>
-              </div>
-            )}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Bab *
+              </label>
+              {chapters.length > 0 ? (
+                <select
+                  value={selectedChapter}
+                  onChange={(e) => setSelectedChapter(e.target.value)}
+                  required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Pilih Bab</option>
+                  {chapters.map((chapter) => (
+                    <option key={chapter.id} value={chapter.id}>
+                      Bab {chapter.chapterNumber}: {chapter.title}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-yellow-800 text-sm">
+                  Belum ada bab yang tersedia untuk kategori ini. Silakan buat bab terlebih dahulu di tab "Kelola Chapter".
+                </div>
+              )}
+            </div>
 
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -409,6 +438,8 @@ export default function AdminForm({ onBack }: AdminFormProps) {
               </button>
             </div>
           </form>
+            </>
+          )}
         </div>
       </div>
     </div>
