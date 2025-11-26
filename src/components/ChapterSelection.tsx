@@ -79,7 +79,7 @@ export default function ChapterSelection({ category, onSelectChapter, onBack }: 
                 </div>
                 <div>
                   <div className="text-sm font-semibold text-blue-600 mb-1">
-                    Bab {chapter.chapter_number}
+                    Bab {chapter.chapterNumber}
                   </div>
                   <h3 className="text-xl font-bold text-gray-800">{chapter.title}</h3>
                 </div>
