@@ -29,7 +29,7 @@ export default function QuestionManagement({ categories }: QuestionManagementPro
   }, [selectedCategory]);
 
   useEffect(() => {
-    if (selectedCategory) {
+    if (selectedCategory && selectedChapter) {
       loadQuestions();
     } else {
       setQuestions([]);
@@ -267,6 +267,10 @@ export default function QuestionManagement({ categories }: QuestionManagementPro
       {!selectedCategory ? (
         <div className="bg-gray-50 border border-gray-300 rounded-lg p-6 text-center text-gray-500">
           Pilih kategori untuk melihat daftar soal
+        </div>
+      ) : !selectedChapter ? (
+        <div className="bg-gray-50 border border-gray-300 rounded-lg p-6 text-center text-gray-500">
+          Pilih bab untuk melihat daftar soal
         </div>
       ) : loading ? (
         <div className="text-center py-8 text-gray-500">Memuat soal...</div>
