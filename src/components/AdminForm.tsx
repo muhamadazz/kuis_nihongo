@@ -274,23 +274,30 @@ export default function AdminForm({ onBack }: AdminFormProps) {
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Bab *
               </label>
-              {chapters.length > 0 ? (
-                <select
-                  value={selectedChapter}
-                  onChange={(e) => setSelectedChapter(e.target.value)}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">Pilih Bab</option>
-                  {chapters.map((chapter) => (
-                    <option key={chapter.id} value={chapter.id}>
-                      Bab {chapter.chapterNumber}: {chapter.title}
-                    </option>
-                  ))}
-                </select>
+              {selectedCategory ? (
+                <>
+                  <select
+                    value={selectedChapter}
+                    onChange={(e) => setSelectedChapter(e.target.value)}
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Pilih Bab</option>
+                    {chapters.map((chapter) => (
+                      <option key={chapter.id} value={chapter.id}>
+                        Bab {chapter.chapterNumber}: {chapter.title}
+                      </option>
+                    ))}
+                  </select>
+                  {chapters.length === 0 && (
+                    <div className="mt-2 bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-yellow-800 text-sm">
+                      Belum ada bab yang tersedia untuk kategori ini. Silakan buat bab terlebih dahulu di tab "Kelola Chapter".
+                    </div>
+                  )}
+                </>
               ) : (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-yellow-800 text-sm">
-                  Belum ada bab yang tersedia untuk kategori ini. Silakan buat bab terlebih dahulu di tab "Kelola Chapter".
+                <div className="bg-gray-50 border border-gray-300 rounded-lg p-4 text-gray-500 text-sm">
+                  Pilih kategori terlebih dahulu untuk melihat daftar bab.
                 </div>
               )}
             </div>
