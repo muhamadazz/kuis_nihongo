@@ -205,14 +205,6 @@ export default function QuestionManagement({ categories }: QuestionManagementPro
     setNewImageFile(null);
   }
 
-  if (!selectedCategory) {
-    return (
-      <div className="bg-gray-50 border border-gray-300 rounded-lg p-6 text-center text-gray-500">
-        Pilih kategori untuk melihat daftar soal
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -242,6 +234,7 @@ export default function QuestionManagement({ categories }: QuestionManagementPro
             value={selectedChapter}
             onChange={(e) => setSelectedChapter(e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            disabled={!selectedCategory}
           >
             <option value="">Semua Bab</option>
             {chapters.map((chapter) => (
@@ -253,7 +246,11 @@ export default function QuestionManagement({ categories }: QuestionManagementPro
         </div>
       </div>
 
-      {loading ? (
+      {!selectedCategory ? (
+        <div className="bg-gray-50 border border-gray-300 rounded-lg p-6 text-center text-gray-500">
+          Pilih kategori untuk melihat daftar soal
+        </div>
+      ) : loading ? (
         <div className="text-center py-8 text-gray-500">Memuat soal...</div>
       ) : questions.length === 0 ? (
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-yellow-800 text-sm">
