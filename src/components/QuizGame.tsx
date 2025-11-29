@@ -54,7 +54,7 @@ export default function QuizGame({ category, chapter, onBack }: QuizGameProps) {
         });
       });
       const shuffled = data.sort(() => Math.random() - 0.5);
-      setQuestions(shuffled.slice(0, 10));
+      setQuestions(shuffled);
     } catch (error) {
       console.error('Error loading questions:', error);
     }
