@@ -23,6 +23,7 @@ export default function AdminForm({ onBack }: AdminFormProps) {
   const [correctAnswer, setCorrectAnswer] = useState('a');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState('');
   const [uploadingImage, setUploadingImage] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -102,6 +103,18 @@ export default function AdminForm({ onBack }: AdminFormProps) {
   const handleRemoveImage = () => {
     setImageFile(null);
     setImagePreview(null);
+    setImageUrl('');
+  };
+
+  const handleImageUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const url = e.target.value;
+    setImageUrl(url);
+    if (url) {
+      setImagePreview(url);
+      setImageFile(null);
+    } else {
+      setImagePreview(null);
+    }
   };
 
   const uploadImageToCloudinary = async (file: File): Promise<string> => {
@@ -140,19 +153,21 @@ export default function AdminForm({ onBack }: AdminFormProps) {
         return;
       }
 
-      let imageUrl: string | null = null;
+      let finalImageUrl: string | null = null;
 
       if (imageFile) {
         setUploadingImage(true);
-        imageUrl = await uploadImageToCloudinary(imageFile);
+        finalImageUrl = await uploadImageToCloudinary(imageFile);
         setUploadingImage(false);
+      } else if (imageUrl.trim()) {
+        finalImageUrl = imageUrl.trim();
       }
 
       await addDoc(collection(db, 'questions'), {
         categoryId: selectedCategory,
         chapterId: selectedChapter,
         questionText,
-        imageUrl,
+        imageUrl: finalImageUrl,
         optionA,
         optionB,
         optionC,
@@ -165,6 +180,7 @@ export default function AdminForm({ onBack }: AdminFormProps) {
       setQuestionText('');
       setImageFile(null);
       setImagePreview(null);
+      setImageUrl('');
       setOptionA('');
       setOptionB('');
       setOptionC('');
@@ -340,26 +356,42 @@ export default function AdminForm({ onBack }: AdminFormProps) {
                 Foto Soal (Opsional)
               </label>
               {!imagePreview ? (
-                <div className="relative">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="hidden"
-                    id="image-upload"
-                  />
-                  <label
-                    htmlFor="image-upload"
-                    className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors"
-                  >
-                    <Upload className="w-8 h-8 text-gray-400 mb-2" />
-                    <span className="text-sm text-gray-600">
-                      Klik untuk upload foto
-                    </span>
-                    <span className="text-xs text-gray-500 mt-1">
-                      Maksimal 5MB
-                    </span>
-                  </label>
+                <div className="space-y-4">
+                  <div>
+                    <input
+                      type="text"
+                      value={imageUrl}
+                      onChange={handleImageUrlChange}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Atau masukkan link foto di sini..."
+                    />
+                  </div>
+                  <div className="relative flex items-center">
+                    <div className="flex-grow border-t border-gray-300"></div>
+                    <span className="px-3 text-sm text-gray-500">atau</span>
+                    <div className="flex-grow border-t border-gray-300"></div>
+                  </div>
+                  <div className="relative">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="hidden"
+                      id="image-upload"
+                    />
+                    <label
+                      htmlFor="image-upload"
+                      className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                    >
+                      <Upload className="w-8 h-8 text-gray-400 mb-2" />
+                      <span className="text-sm text-gray-600">
+                        Klik untuk upload foto
+                      </span>
+                      <span className="text-xs text-gray-500 mt-1">
+                        Maksimal 5MB
+                      </span>
+                    </label>
+                  </div>
                 </div>
               ) : (
                 <div className="relative">

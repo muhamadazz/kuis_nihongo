@@ -17,6 +17,7 @@ export default function QuestionManagement({ categories }: QuestionManagementPro
   const [editForm, setEditForm] = useState<Question | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [newImageFile, setNewImageFile] = useState<File | null>(null);
+  const [editImageUrl, setEditImageUrl] = useState('');
 
   useEffect(() => {
     if (selectedCategory) {
@@ -126,8 +127,20 @@ export default function QuestionManagement({ categories }: QuestionManagementPro
     setEditingId(question.id);
     setEditForm(question);
     setImagePreview(question.imageUrl || null);
+    setEditImageUrl('');
     setNewImageFile(null);
   }
+
+  const handleEditImageUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const url = e.target.value;
+    setEditImageUrl(url);
+    if (url) {
+      setImagePreview(url);
+      setNewImageFile(null);
+    } else {
+      setImagePreview(editForm?.imageUrl || null);
+    }
+  };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -176,6 +189,8 @@ export default function QuestionManagement({ categories }: QuestionManagementPro
       let imageUrl = editForm.imageUrl;
       if (newImageFile) {
         imageUrl = await uploadImageToCloudinary(newImageFile);
+      } else if (editImageUrl.trim()) {
+        imageUrl = editImageUrl.trim();
       }
 
       await updateDoc(doc(db, 'questions', editingId!), {
@@ -191,6 +206,7 @@ export default function QuestionManagement({ categories }: QuestionManagementPro
       setEditingId(null);
       setEditForm(null);
       setImagePreview(null);
+      setEditImageUrl('');
       setNewImageFile(null);
       loadQuestions();
     } catch (error) {
@@ -203,6 +219,7 @@ export default function QuestionManagement({ categories }: QuestionManagementPro
     setEditingId(null);
     setEditForm(null);
     setImagePreview(null);
+    setEditImageUrl('');
     setNewImageFile(null);
   }
 
@@ -282,21 +299,37 @@ export default function QuestionManagement({ categories }: QuestionManagementPro
                       Foto Soal
                     </label>
                     {!imagePreview ? (
-                      <div className="relative">
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleImageChange}
-                          className="hidden"
-                          id={`image-upload-${question.id}`}
-                        />
-                        <label
-                          htmlFor={`image-upload-${question.id}`}
-                          className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors"
-                        >
-                          <Upload className="w-8 h-8 text-gray-400 mb-2" />
-                          <span className="text-sm text-gray-600">Klik untuk upload foto</span>
-                        </label>
+                      <div className="space-y-4">
+                        <div>
+                          <input
+                            type="text"
+                            value={editImageUrl}
+                            onChange={handleEditImageUrlChange}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Atau masukkan link foto di sini..."
+                          />
+                        </div>
+                        <div className="relative flex items-center">
+                          <div className="flex-grow border-t border-gray-300"></div>
+                          <span className="px-3 text-sm text-gray-500">atau</span>
+                          <div className="flex-grow border-t border-gray-300"></div>
+                        </div>
+                        <div className="relative">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageChange}
+                            className="hidden"
+                            id={`image-upload-${question.id}`}
+                          />
+                          <label
+                            htmlFor={`image-upload-${question.id}`}
+                            className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                          >
+                            <Upload className="w-8 h-8 text-gray-400 mb-2" />
+                            <span className="text-sm text-gray-600">Klik untuk upload foto</span>
+                          </label>
+                        </div>
                       </div>
                     ) : (
                       <div className="relative">
@@ -309,6 +342,7 @@ export default function QuestionManagement({ categories }: QuestionManagementPro
                           type="button"
                           onClick={() => {
                             setImagePreview(null);
+                            setEditImageUrl('');
                             setNewImageFile(null);
                           }}
                           className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full hover:bg-red-600"
