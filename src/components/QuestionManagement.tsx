@@ -78,10 +78,7 @@ export default function QuestionManagement({ categories }: QuestionManagementPro
         );
       }
 
-      console.log('Loading questions for category:', selectedCategory, 'chapter:', selectedChapter || 'all');
-
       const querySnapshot = await getDocs(q);
-      console.log('Found questions:', querySnapshot.docs.length);
 
       const data: (Question & { categoryName: string; chapterTitle: string })[] = [];
       const categoryMap = new Map(categories.map(c => [c.id, c.name]));
@@ -89,7 +86,6 @@ export default function QuestionManagement({ categories }: QuestionManagementPro
 
       querySnapshot.forEach((doc) => {
         const qData = doc.data();
-        console.log('Question data:', qData);
         data.push({
           id: doc.id,
           categoryId: qData.categoryId,
@@ -106,7 +102,6 @@ export default function QuestionManagement({ categories }: QuestionManagementPro
           chapterTitle: chapterMap.get(qData.chapterId) || 'Tidak ada bab',
         });
       });
-      console.log('Final questions array:', data);
       setQuestions(data);
     } catch (error) {
       console.error('Error loading questions:', error);
