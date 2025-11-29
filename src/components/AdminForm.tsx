@@ -1,15 +1,16 @@
 import { useEffect, useState } from 'react';
 import { db, Category, Chapter } from '../lib/firebase';
 import { collection, query, where, getDocs, orderBy, addDoc, serverTimestamp } from 'firebase/firestore';
-import { ArrowLeft, Plus, Check, Upload, X, BookOpen } from 'lucide-react';
+import { ArrowLeft, Plus, Check, Upload, X, BookOpen, Edit } from 'lucide-react';
 import ChapterManagement from './ChapterManagement';
+import QuestionManagement from './QuestionManagement';
 
 type AdminFormProps = {
   onBack: () => void;
 };
 
 export default function AdminForm({ onBack }: AdminFormProps) {
-  const [activeTab, setActiveTab] = useState<'questions' | 'chapters'>('questions');
+  const [activeTab, setActiveTab] = useState<'add-questions' | 'manage-questions' | 'chapters'>('add-questions');
   const [categories, setCategories] = useState<Category[]>([]);
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -204,11 +205,11 @@ export default function AdminForm({ onBack }: AdminFormProps) {
             </div>
           </div>
 
-          <div className="flex space-x-4 mb-8 border-b border-gray-200">
+          <div className="flex space-x-4 mb-8 border-b border-gray-200 overflow-x-auto">
             <button
-              onClick={() => setActiveTab('questions')}
-              className={`pb-4 px-2 font-semibold transition-colors relative ${
-                activeTab === 'questions'
+              onClick={() => setActiveTab('add-questions')}
+              className={`pb-4 px-2 font-semibold transition-colors relative whitespace-nowrap ${
+                activeTab === 'add-questions'
                   ? 'text-blue-600'
                   : 'text-gray-500 hover:text-gray-700'
               }`}
@@ -217,13 +218,29 @@ export default function AdminForm({ onBack }: AdminFormProps) {
                 <Plus className="w-5 h-5 mr-2" />
                 Tambah Soal
               </div>
-              {activeTab === 'questions' && (
+              {activeTab === 'add-questions' && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"></div>
+              )}
+            </button>
+            <button
+              onClick={() => setActiveTab('manage-questions')}
+              className={`pb-4 px-2 font-semibold transition-colors relative whitespace-nowrap ${
+                activeTab === 'manage-questions'
+                  ? 'text-blue-600'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <div className="flex items-center">
+                <Edit className="w-5 h-5 mr-2" />
+                Kelola Soal
+              </div>
+              {activeTab === 'manage-questions' && (
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"></div>
               )}
             </button>
             <button
               onClick={() => setActiveTab('chapters')}
-              className={`pb-4 px-2 font-semibold transition-colors relative ${
+              className={`pb-4 px-2 font-semibold transition-colors relative whitespace-nowrap ${
                 activeTab === 'chapters'
                   ? 'text-blue-600'
                   : 'text-gray-500 hover:text-gray-700'
@@ -241,6 +258,8 @@ export default function AdminForm({ onBack }: AdminFormProps) {
 
           {activeTab === 'chapters' ? (
             <ChapterManagement categories={categories} />
+          ) : activeTab === 'manage-questions' ? (
+            <QuestionManagement categories={categories} />
           ) : (
             <>
               {success && (
