@@ -15,12 +15,13 @@ export default function AdminForm({ onBack }: AdminFormProps) {
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedChapter, setSelectedChapter] = useState('');
+  const [questionType, setQuestionType] = useState<'multiple-choice' | 'input'>('multiple-choice');
   const [questionText, setQuestionText] = useState('');
   const [optionA, setOptionA] = useState('');
   const [optionB, setOptionB] = useState('');
   const [optionC, setOptionC] = useState('');
   const [optionD, setOptionD] = useState('');
-  const [correctAnswer, setCorrectAnswer] = useState('a');
+  const [correctAnswer, setCorrectAnswer] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageUrl, setImageUrl] = useState('');
@@ -163,18 +164,24 @@ export default function AdminForm({ onBack }: AdminFormProps) {
         finalImageUrl = imageUrl.trim();
       }
 
-      await addDoc(collection(db, 'questions'), {
+      const questionData: any = {
         categoryId: selectedCategory,
         chapterId: selectedChapter,
         questionText,
         imageUrl: finalImageUrl,
-        optionA,
-        optionB,
-        optionC,
-        optionD,
+        questionType,
         correctAnswer,
         createdAt: serverTimestamp(),
-      });
+      };
+
+      if (questionType === 'multiple-choice') {
+        questionData.optionA = optionA;
+        questionData.optionB = optionB;
+        questionData.optionC = optionC;
+        questionData.optionD = optionD;
+      }
+
+      await addDoc(collection(db, 'questions'), questionData);
 
       setSuccess(true);
       setQuestionText('');
@@ -185,7 +192,8 @@ export default function AdminForm({ onBack }: AdminFormProps) {
       setOptionB('');
       setOptionC('');
       setOptionD('');
-      setCorrectAnswer('a');
+      setCorrectAnswer('');
+      setQuestionType('multiple-choice');
       setSelectedChapter('');
 
       setTimeout(() => setSuccess(false), 3000);
@@ -339,6 +347,30 @@ export default function AdminForm({ onBack }: AdminFormProps) {
 
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Jenis Soal *
+              </label>
+              <select
+                value={questionType}
+                onChange={(e) => {
+                  setQuestionType(e.target.value as 'multiple-choice' | 'input');
+                  setCorrectAnswer('');
+                  if (e.target.value === 'input') {
+                    setOptionA('');
+                    setOptionB('');
+                    setOptionC('');
+                    setOptionD('');
+                  }
+                }}
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="multiple-choice">Pilihan Ganda</option>
+                <option value="input">Input Jawaban</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Soal *
               </label>
               <textarea
@@ -411,80 +443,102 @@ export default function AdminForm({ onBack }: AdminFormProps) {
               )}
             </div>
 
-            <div className="grid grid-cols-1 gap-4">
+            {questionType === 'multiple-choice' ? (
+              <>
+                <div className="grid grid-cols-1 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Pilihan A *
+                    </label>
+                    <input
+                      type="text"
+                      value={optionA}
+                      onChange={(e) => setOptionA(e.target.value)}
+                      required
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Pilihan A"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Pilihan B *
+                    </label>
+                    <input
+                      type="text"
+                      value={optionB}
+                      onChange={(e) => setOptionB(e.target.value)}
+                      required
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Pilihan B"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Pilihan C *
+                    </label>
+                    <input
+                      type="text"
+                      value={optionC}
+                      onChange={(e) => setOptionC(e.target.value)}
+                      required
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Pilihan C"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Pilihan D *
+                    </label>
+                    <input
+                      type="text"
+                      value={optionD}
+                      onChange={(e) => setOptionD(e.target.value)}
+                      required
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Pilihan D"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Jawaban Benar *
+                  </label>
+                  <select
+                    value={correctAnswer}
+                    onChange={(e) => setCorrectAnswer(e.target.value)}
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Pilih Jawaban Benar</option>
+                    <option value="a">A</option>
+                    <option value="b">B</option>
+                    <option value="c">C</option>
+                    <option value="d">D</option>
+                  </select>
+                </div>
+              </>
+            ) : (
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Pilihan A *
+                  Jawaban yang Benar *
                 </label>
                 <input
                   type="text"
-                  value={optionA}
-                  onChange={(e) => setOptionA(e.target.value)}
+                  value={correctAnswer}
+                  onChange={(e) => setCorrectAnswer(e.target.value)}
                   required
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Pilihan A"
+                  placeholder="Masukkan jawaban yang benar (akan dicocokkan dengan input user)"
                 />
+                <p className="mt-2 text-sm text-gray-500">
+                  Jawaban akan dicocokkan secara case-insensitive (tidak peduli huruf besar/kecil)
+                </p>
               </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Pilihan B *
-                </label>
-                <input
-                  type="text"
-                  value={optionB}
-                  onChange={(e) => setOptionB(e.target.value)}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Pilihan B"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Pilihan C *
-                </label>
-                <input
-                  type="text"
-                  value={optionC}
-                  onChange={(e) => setOptionC(e.target.value)}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Pilihan C"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Pilihan D *
-                </label>
-                <input
-                  type="text"
-                  value={optionD}
-                  onChange={(e) => setOptionD(e.target.value)}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Pilihan D"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Jawaban Benar *
-              </label>
-              <select
-                value={correctAnswer}
-                onChange={(e) => setCorrectAnswer(e.target.value)}
-                required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="a">A</option>
-                <option value="b">B</option>
-                <option value="c">C</option>
-                <option value="d">D</option>
-              </select>
-            </div>
+            )}
 
             <div className="flex gap-4 pt-4">
               <button

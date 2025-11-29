@@ -93,6 +93,7 @@ export default function QuestionManagement({ categories }: QuestionManagementPro
           chapterId: qData.chapterId,
           questionText: qData.questionText,
           imageUrl: qData.imageUrl,
+          questionType: qData.questionType || 'multiple-choice',
           optionA: qData.optionA,
           optionB: qData.optionB,
           optionC: qData.optionC,
@@ -193,15 +194,21 @@ export default function QuestionManagement({ categories }: QuestionManagementPro
         imageUrl = editImageUrl.trim();
       }
 
-      await updateDoc(doc(db, 'questions', editingId!), {
+      const updateData: any = {
         questionText: editForm.questionText,
         imageUrl: imageUrl,
-        optionA: editForm.optionA,
-        optionB: editForm.optionB,
-        optionC: editForm.optionC,
-        optionD: editForm.optionD,
+        questionType: editForm.questionType,
         correctAnswer: editForm.correctAnswer,
-      });
+      };
+
+      if (editForm.questionType === 'multiple-choice') {
+        updateData.optionA = editForm.optionA;
+        updateData.optionB = editForm.optionB;
+        updateData.optionC = editForm.optionC;
+        updateData.optionD = editForm.optionD;
+      }
+
+      await updateDoc(doc(db, 'questions', editingId!), updateData);
 
       setEditingId(null);
       setEditForm(null);
@@ -288,6 +295,23 @@ export default function QuestionManagement({ categories }: QuestionManagementPro
 
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Jenis Soal *
+                    </label>
+                    <select
+                      value={editForm.questionType}
+                      onChange={(e) => {
+                        const newType = e.target.value as 'multiple-choice' | 'input';
+                        setEditForm({ ...editForm, questionType: newType, correctAnswer: '' });
+                      }}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="multiple-choice">Pilihan Ganda</option>
+                      <option value="input">Input Jawaban</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
                       Soal *
                     </label>
                     <textarea
@@ -357,60 +381,81 @@ export default function QuestionManagement({ categories }: QuestionManagementPro
                     )}
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">A *</label>
-                      <input
-                        type="text"
-                        value={editForm.optionA}
-                        onChange={(e) => setEditForm({ ...editForm, optionA: e.target.value })}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">B *</label>
-                      <input
-                        type="text"
-                        value={editForm.optionB}
-                        onChange={(e) => setEditForm({ ...editForm, optionB: e.target.value })}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">C *</label>
-                      <input
-                        type="text"
-                        value={editForm.optionC}
-                        onChange={(e) => setEditForm({ ...editForm, optionC: e.target.value })}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">D *</label>
-                      <input
-                        type="text"
-                        value={editForm.optionD}
-                        onChange={(e) => setEditForm({ ...editForm, optionD: e.target.value })}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                  </div>
+                  {editForm.questionType === 'multiple-choice' ? (
+                    <>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">A *</label>
+                          <input
+                            type="text"
+                            value={editForm.optionA || ''}
+                            onChange={(e) => setEditForm({ ...editForm, optionA: e.target.value })}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">B *</label>
+                          <input
+                            type="text"
+                            value={editForm.optionB || ''}
+                            onChange={(e) => setEditForm({ ...editForm, optionB: e.target.value })}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">C *</label>
+                          <input
+                            type="text"
+                            value={editForm.optionC || ''}
+                            onChange={(e) => setEditForm({ ...editForm, optionC: e.target.value })}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">D *</label>
+                          <input
+                            type="text"
+                            value={editForm.optionD || ''}
+                            onChange={(e) => setEditForm({ ...editForm, optionD: e.target.value })}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                        </div>
+                      </div>
 
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Jawaban Benar *
-                    </label>
-                    <select
-                      value={editForm.correctAnswer}
-                      onChange={(e) => setEditForm({ ...editForm, correctAnswer: e.target.value as 'a' | 'b' | 'c' | 'd' })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                      <option value="a">A</option>
-                      <option value="b">B</option>
-                      <option value="c">C</option>
-                      <option value="d">D</option>
-                    </select>
-                  </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          Jawaban Benar *
+                        </label>
+                        <select
+                          value={editForm.correctAnswer}
+                          onChange={(e) => setEditForm({ ...editForm, correctAnswer: e.target.value })}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          <option value="">Pilih Jawaban</option>
+                          <option value="a">A</option>
+                          <option value="b">B</option>
+                          <option value="c">C</option>
+                          <option value="d">D</option>
+                        </select>
+                      </div>
+                    </>
+                  ) : (
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Jawaban yang Benar *
+                      </label>
+                      <input
+                        type="text"
+                        value={editForm.correctAnswer}
+                        onChange={(e) => setEditForm({ ...editForm, correctAnswer: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Masukkan jawaban yang benar"
+                      />
+                      <p className="mt-2 text-sm text-gray-500">
+                        Jawaban akan dicocokkan secara case-insensitive
+                      </p>
+                    </div>
+                  )}
 
                   <div className="flex gap-2 pt-4">
                     <button
@@ -440,6 +485,13 @@ export default function QuestionManagement({ categories }: QuestionManagementPro
                         <span className="text-xs font-semibold bg-gray-100 text-gray-800 px-2 py-1 rounded">
                           {question.chapterTitle}
                         </span>
+                        <span className={`text-xs font-semibold px-2 py-1 rounded ${
+                          question.questionType === 'input'
+                            ? 'bg-purple-100 text-purple-800'
+                            : 'bg-green-100 text-green-800'
+                        }`}>
+                          {question.questionType === 'input' ? 'Input' : 'Pilihan Ganda'}
+                        </span>
                       </div>
                       <p className="text-gray-800 font-medium mb-2">{question.questionText}</p>
                       {question.imageUrl && (
@@ -449,20 +501,27 @@ export default function QuestionManagement({ categories }: QuestionManagementPro
                           className="w-40 h-40 object-cover rounded-lg mb-3"
                         />
                       )}
-                      <div className="grid grid-cols-2 gap-2 text-sm">
-                        <div className={`p-2 rounded ${question.correctAnswer === 'a' ? 'bg-green-100' : 'bg-gray-50'}`}>
-                          <span className="font-semibold">A:</span> {question.optionA}
+                      {question.questionType === 'multiple-choice' ? (
+                        <div className="grid grid-cols-2 gap-2 text-sm">
+                          <div className={`p-2 rounded ${question.correctAnswer === 'a' ? 'bg-green-100' : 'bg-gray-50'}`}>
+                            <span className="font-semibold">A:</span> {question.optionA}
+                          </div>
+                          <div className={`p-2 rounded ${question.correctAnswer === 'b' ? 'bg-green-100' : 'bg-gray-50'}`}>
+                            <span className="font-semibold">B:</span> {question.optionB}
+                          </div>
+                          <div className={`p-2 rounded ${question.correctAnswer === 'c' ? 'bg-green-100' : 'bg-gray-50'}`}>
+                            <span className="font-semibold">C:</span> {question.optionC}
+                          </div>
+                          <div className={`p-2 rounded ${question.correctAnswer === 'd' ? 'bg-green-100' : 'bg-gray-50'}`}>
+                            <span className="font-semibold">D:</span> {question.optionD}
+                          </div>
                         </div>
-                        <div className={`p-2 rounded ${question.correctAnswer === 'b' ? 'bg-green-100' : 'bg-gray-50'}`}>
-                          <span className="font-semibold">B:</span> {question.optionB}
+                      ) : (
+                        <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-sm">
+                          <span className="font-semibold text-green-800">Jawaban: </span>
+                          <span className="text-gray-800">{question.correctAnswer}</span>
                         </div>
-                        <div className={`p-2 rounded ${question.correctAnswer === 'c' ? 'bg-green-100' : 'bg-gray-50'}`}>
-                          <span className="font-semibold">C:</span> {question.optionC}
-                        </div>
-                        <div className={`p-2 rounded ${question.correctAnswer === 'd' ? 'bg-green-100' : 'bg-gray-50'}`}>
-                          <span className="font-semibold">D:</span> {question.optionD}
-                        </div>
-                      </div>
+                      )}
                     </div>
                     <div className="flex gap-2 ml-4">
                       <button

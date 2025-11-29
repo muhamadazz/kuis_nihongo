@@ -34,10 +34,11 @@ export type Question = {
   chapterId: string | null;
   questionText: string;
   imageUrl?: string | null;
-  optionA: string;
-  optionB: string;
-  optionC: string;
-  optionD: string;
-  correctAnswer: 'a' | 'b' | 'c' | 'd';
+  questionType: 'multiple-choice' | 'input';
+  optionA?: string;
+  optionB?: string;
+  optionC?: string;
+  optionD?: string;
+  correctAnswer: string;
   createdAt: Date;
 };
